@@ -3,12 +3,12 @@ requires = ["setuptools>=61.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = {{ cookiecutter.project_slug }}
+name = "{{ cookiecutter.project_slug }}"
 version = "{{ cookiecutter.python_version }}"
 description = "A unified framework for optimizing budget allocations across diverse models"
 readme = "README.md"
 authors = [
-    {name = {{ cookiecutter.author_name }}, email = {{ cookiecutter.author_email }}},
+    {name = "{{ cookiecutter.author_name }}", email = "{{ cookiecutter.author_email }}"},
 ]
 requires-python = ">={{ cookiecutter.python_version }}"
 classifiers = [

@@ -106,8 +106,8 @@ latex_elements = {
 
 # Grouping the document tree into LaTeX files
 latex_documents = [
-    (master_doc, 'OptimizerFramework.tex', 'Atlas Documentation',
-     'Atlas Team', 'manual'),
+    (master_doc, '{{cookiecutter.project_slug}}.tex', '{{cookiecutter.project_name}} Documentation',
+     '{{cookiecutter.author_name}}', 'manual'),
 ]
 
 # -- Extension configuration -------------------------------------------------

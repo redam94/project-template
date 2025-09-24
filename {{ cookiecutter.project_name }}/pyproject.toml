@@ -1,0 +1,96 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = {{ cookiecutter.project_slug }}
+version = "{{ cookiecutter.python_version }}"
+description = "A unified framework for optimizing budget allocations across diverse models"
+readme = "README.md"
+authors = [
+    {name = {{ cookiecutter.author_name }}, email = {{ cookiecutter.author_email }}},
+]
+requires-python = ">={{ cookiecutter.python_version }}"
+classifiers = [
+   # TODO: Update classifiers as appropriate
+]
+
+dependencies = [
+
+]
+
+[project.optional-dependencies]
+docs = [
+    "sphinx",
+    "sphinx-rtd-theme",
+    "sphinx-copybutton",
+    "sphinx-tabs",
+    "sphinx-autodoc-typehints",
+    "myst-parser",
+    "nbsphinx",
+    "sphinx-autobuild",
+    "sphinxcontrib-mermaid",
+    "sphinx-design",
+    "linkify-it-py",
+]
+
+dev = [
+    "pytest",
+    "pytest-cov",
+    "pytest-mock",
+    "black",
+    "isort",
+    "flake8",
+    "mypy",
+    "pre-commit",
+]
+
+
+
+[project.urls]
+Homepage = "https://github.com/{{ cookiecutter.github_username }}/{{ cookiecutter.github_repository }}"
+Documentation = "https://{{ cookiecutter.github_repository }}.readthedocs.io"
+Repository = "https://github.com/{{ cookiecutter.github_username }}/{{ cookiecutter.github_repository }}"
+Issues = "https://github.com/{{ cookiecutter.github_username }}/{{ cookiecutter.github_repository }}/issues"
+
+[tool.black]
+line-length = 120
+target-version = ['py310', 'py311', 'py312']
+include = '\.pyi?$'
+
+[tool.isort]
+profile = "black"
+line_length = 120
+
+[tool.mypy]
+python_version = {{ cookiecutter.python_version }}
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
+check_untyped_defs = true
+no_implicit_optional = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra --strict-markers --cov={{ cookiecutter.project_slug }}"
+
+[tool.coverage.run]
+branch = true
+source = ["{{ cookiecutter.project_slug }}"]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "raise AssertionError",
+    "raise NotImplementedError",
+    "if __name__ == .__main__.:",
+]
+
+[tool.uv.sources]
+{{ cookiecutter.project_slug }} = { workspace = true }
+
+

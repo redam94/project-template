@@ -1,0 +1,11 @@
+{
+    "project_name": "example-project",
+    "author_name": "Your Name",
+    "author_email": "your-email@example.com",
+    "version": "0.1.0",
+    "description": "A short description of the project",
+    "project_slug": "{{ cookiecutter.project_name.lower().replace(' ', '_').replace('-', '_') }}",
+    "python_version": "3.10",
+    "github_username": "your-github-username",
+    "github_repository": "{{ cookiecutter.project_slug }}"
+}

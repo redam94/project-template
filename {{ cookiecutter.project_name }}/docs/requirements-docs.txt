@@ -1,0 +1,18 @@
+# Documentation dependencies
+
+sphinx
+sphinx-rtd-theme
+sphinx-copybutton
+sphinx-tabs
+sphinx-autodoc-typehints
+sphinx-design
+myst-parser
+nbsphinx
+sphinx-autobuild
+sphinxcontrib-mermaid
+linkify-it-py
+
+
+# For notebooks
+jupyter
+ipykernel

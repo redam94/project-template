@@ -16,7 +16,7 @@ sys.path.insert(0, os.path.abspath('../../src'))
 project = {{ cookiecutter.project_name }}
 copyright = f'{datetime.now().year}, ' + "{{ cookiecutter.author_name }}"
 author = {{ cookiecutter.author_name }}
-release = {{ cookiecutter.project_version }}
+release = {{ cookiecutter.version }}
 version = '0.0'
 
 # -- General configuration ---------------------------------------------------

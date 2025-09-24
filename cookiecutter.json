@@ -7,5 +7,5 @@
     "project_slug": "{{ cookiecutter.project_name.lower().replace(' ', '_').replace('-', '_') }}",
     "python_version": "3.10",
     "github_username": "your-github-username",
-    "github_repository": "{{ cookiecutter.project_slug }}"
+    "github_repository": "{{ cookiecutter.project_name.lower().replace(' ', '-').replace('_', '-') }}"
 }

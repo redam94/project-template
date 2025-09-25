@@ -350,7 +350,7 @@ class AITestGenerator:
         if self.provider == "openai":
             import openai
             self.client = openai.OpenAI(api_key=api_key)
-            self.model = "gpt-4-turbo-preview"
+            self.model = "gpt-4o-mini"
         elif self.provider == "anthropic":
             import anthropic
             self.client = anthropic.Anthropic(api_key=api_key)

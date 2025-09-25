@@ -1,8 +1,9 @@
+{% raw %}
 """
 Advanced AI Documentation Generator with caching, batch processing, and multiple format support.
 This enhanced version includes cost optimization, parallel processing, and smart caching.
 """
-{% raw %}
+
 import os
 import ast
 import json
@@ -48,6 +49,9 @@ class CodeElement:
     decorators: List[str] = field(default_factory=list)
     complexity: int = 0
     hash: Optional[str] = None
+    
+    def __hash__(self):
+        return self.hash
     
     def __post_init__(self):
         # Calculate hash for caching
@@ -278,7 +282,7 @@ class BatchAIDocGenerator:
         if self.provider == "openai":
             import openai
             self.client = openai.OpenAI(api_key=api_key)
-            self.model = "gpt-4-turbo-preview"
+            self.model = "gpt-4o-mini"
             self.cost_per_1k_input = 0.01
             self.cost_per_1k_output = 0.03
         elif self.provider == "anthropic":
@@ -653,22 +657,520 @@ class DocumentationReportGenerator:
         with open(output_path, 'w') as f:
             f.write(html)
 
+class MarkdownStyle(Enum):
+    """Markdown documentation styles."""
+    GITHUB = "github"
+    MKDOCS = "mkdocs"
+    SPHINX_MD = "sphinx_md"
+    DOCUSAURUS = "docusaurus"
+
+class MarkdownDocumentationBuilder:
+    """Build markdown documentation from analyzed code."""
+    
+    def __init__(self, output_dir: Path, style: MarkdownStyle = MarkdownStyle.GITHUB):
+        self.output_dir = output_dir
+        self.style = style
+        self.output_dir.mkdir(parents=True, exist_ok=True)
+    
+    def build_documentation(self, elements: Dict[str, CodeElement], enhanced_docs: Dict[str, str]) -> Dict[str, Path]:
+        """Build complete markdown documentation."""
+        generated_files = {}
+        
+        # Create directory structure
+        api_dir = self.output_dir / "api"
+        guides_dir = self.output_dir / "guides"
+        api_dir.mkdir(exist_ok=True)
+        guides_dir.mkdir(exist_ok=True)
+        
+        # Generate main README
+        readme_path = self.output_dir / "README.md"
+        self._generate_readme(elements, readme_path)
+        generated_files['readme'] = readme_path
+        
+        # Generate API documentation
+        api_files = self._generate_api_docs(elements, enhanced_docs, api_dir)
+        generated_files.update(api_files)
+        
+        # Generate guides
+        guide_files = self._generate_guides(guides_dir)
+        generated_files.update(guide_files)
+        
+        # Generate index for different styles
+        if self.style == MarkdownStyle.MKDOCS:
+            self._generate_mkdocs_config()
+        elif self.style == MarkdownStyle.DOCUSAURUS:
+            self._generate_docusaurus_config()
+        
+        logger.info(f"Generated {len(generated_files)} documentation files")
+        return generated_files
+    
+    def _generate_readme(self, elements: Dict[str, CodeElement], output_path: Path):
+        """Generate main README file."""
+        content = [
+            "# Project Documentation",
+            "",
+            "![Python](https://img.shields.io/badge/python-3.9%2B-blue)",
+            "![Tests](https://img.shields.io/badge/tests-passing-green)",
+            "![Coverage](https://img.shields.io/badge/coverage-95%25-brightgreen)",
+            "![Documentation](https://img.shields.io/badge/docs-latest-brightgreen)",
+            "",
+            "## Overview",
+            "",
+            "This project provides comprehensive Python modules with AI-enhanced documentation.",
+            "",
+            "## Features",
+            "",
+            "- ✨ AI-powered documentation generation",
+            "- 🧪 Automated test generation",
+            "- 📚 Complete API reference",
+            "- 🚀 High performance implementation",
+            "",
+            "## Installation",
+            "",
+            "```bash",
+            "pip install package-name",
+            "```",
+            "",
+            "## Quick Start",
+            "",
+            "```python",
+            "from package import main",
+            "",
+            "# Your code here",
+            "result = main()",
+            "```",
+            "",
+            "## Documentation",
+            "",
+            "- [API Reference](api/index.md)",
+            "- [Installation Guide](guides/installation.md)",
+            "- [Quick Start Guide](guides/quickstart.md)",
+            "- [Development Guide](guides/development.md)",
+            "",
+            "## Statistics",
+            "",
+            f"- Total code elements: {len(elements)}",
+            f"- Average complexity: {sum(e.complexity for e in elements.values()) / len(elements) if elements else 0:.1f}",
+            f"- Documentation coverage: {sum(1 for e in elements.values() if e.docstring) / len(elements) * 100 if elements else 0:.1f}%",
+            "",
+            "## License",
+            "",
+            "MIT License - see LICENSE file for details",
+        ]
+        
+        with open(output_path, 'w') as f:
+            f.write('\n'.join(content))
+    
+    def _generate_api_docs(self, elements: Dict[str, CodeElement], enhanced_docs: Dict[str, str], api_dir: Path) -> Dict[str, Path]:
+        """Generate API documentation."""
+        api_files = {}
+        
+        # Group elements by module
+        modules = {}
+        for key, element in elements.items():
+            module_path = element.file_path.split('::')[0] if '::' in element.file_path else element.file_path
+            if module_path not in modules:
+                modules[module_path] = []
+            modules[module_path].append((key, element))
+        
+        # Generate index
+        index_path = api_dir / "index.md"
+        self._generate_api_index(modules, index_path)
+        api_files['api_index'] = index_path
+        
+        # Generate module documentation
+        for module_path, module_elements in modules.items():
+            module_name = Path(module_path).stem
+            module_doc_path = api_dir / f"{module_name}.md"
+            self._generate_module_doc(module_path, module_elements, enhanced_docs, module_doc_path)
+            api_files[f"api_{module_name}"] = module_doc_path
+        
+        return api_files
+    
+    def _generate_api_index(self, modules: Dict[str, list], output_path: Path):
+        """Generate API index file."""
+        content = [
+            "# API Reference",
+            "",
+            "Complete API documentation for all modules.",
+            "",
+            "## Modules",
+            "",
+        ]
+        
+        for module_path in sorted(modules.keys()):
+            module_name = Path(module_path).stem
+            content.append(f"- [{module_name}](./{module_name}.md)")
+        
+        with open(output_path, 'w') as f:
+            f.write('\n'.join(content))
+    
+    def _generate_module_doc(self, module_path: str, elements: list, enhanced_docs: Dict[str, str], output_path: Path):
+        """Generate documentation for a module."""
+        module_name = Path(module_path).stem
+        
+        content = [
+            f"# Module: {module_name}",
+            "",
+            f"`{module_path}`",
+            "",
+            "## Contents",
+            "",
+        ]
+        
+        # Separate classes and functions
+        classes = []
+        functions = []
+        
+        for key, element in elements:
+            if element.type == 'class':
+                classes.append((key, element))
+            elif element.type == 'function' and '::' not in key:
+                functions.append((key, element))
+        
+        # Add table of contents
+        if classes:
+            content.append("### Classes")
+            content.append("")
+            for key, element in classes:
+                content.append(f"- [{element.name}](#{element.name.lower()})")
+            content.append("")
+        
+        if functions:
+            content.append("### Functions")
+            content.append("")
+            for key, element in functions:
+                content.append(f"- [{element.name}](#{element.name.lower()})")
+            content.append("")
+        
+        # Add detailed documentation
+        if classes:
+            content.append("## Classes")
+            content.append("")
+            for key, element in classes:
+                doc = enhanced_docs.get(element.hash, element.docstring or "No documentation available.")
+                content.extend(self._format_class_doc(element, doc, elements))
+                content.append("")
+        
+        if functions:
+            content.append("## Functions")
+            content.append("")
+            for key, element in functions:
+                doc = enhanced_docs.get(element.hash, element.docstring or "No documentation available.")
+                content.extend(self._format_function_doc(element, doc))
+                content.append("")
+        
+        with open(output_path, 'w') as f:
+            f.write('\n'.join(content))
+    
+    def _format_class_doc(self, element: CodeElement, doc: str, all_elements: list) -> List[str]:
+        """Format class documentation."""
+        lines = [
+            f"### `{element.name}`",
+            "",
+        ]
+        
+        if element.signature:
+            lines.extend([
+                "```python",
+                element.signature,
+                "```",
+                "",
+            ])
+        
+        lines.extend([
+            doc,
+            "",
+            "#### Methods",
+            "",
+        ])
+        
+        # Find methods for this class
+        class_prefix = f"{element.file_path}::{element.name}::"
+        for key, elem in all_elements:
+            if key.startswith(class_prefix) and elem.type in ['method', 'function']:
+                lines.append(f"- `{elem.name}()` - {(elem.docstring or 'No description')[:50]}")
+        
+        return lines
+    
+    def _format_function_doc(self, element: CodeElement, doc: str) -> List[str]:
+        """Format function documentation."""
+        lines = [
+            f"### `{element.name}()`",
+            "",
+        ]
+        
+        if element.signature:
+            lines.extend([
+                "```python",
+                element.signature,
+                "```",
+                "",
+            ])
+        
+        lines.extend([
+            doc,
+            "",
+        ])
+        
+        if element.complexity > 5:
+            lines.extend([
+                f"**Complexity:** {element.complexity} (High)",
+                "",
+            ])
+        
+        # Add source code in collapsible section for GitHub
+        if self.style == MarkdownStyle.GITHUB and element.source:
+            lines.extend([
+                "<details>",
+                "<summary>View Source</summary>",
+                "",
+                "```python",
+                element.source[:500],
+                "```",
+                "",
+                "</details>",
+                "",
+            ])
+        
+        return lines
+    
+    def _generate_guides(self, guides_dir: Path) -> Dict[str, Path]:
+        """Generate guide documents."""
+        guides = {}
+        
+        # Installation guide
+        install_path = guides_dir / "installation.md"
+        self._generate_installation_guide(install_path)
+        guides['guide_installation'] = install_path
+        
+        # Quick start guide
+        quickstart_path = guides_dir / "quickstart.md"
+        self._generate_quickstart_guide(quickstart_path)
+        guides['guide_quickstart'] = quickstart_path
+        
+        # Development guide
+        dev_path = guides_dir / "development.md"
+        self._generate_development_guide(dev_path)
+        guides['guide_development'] = dev_path
+        
+        return guides
+    
+    def _generate_installation_guide(self, output_path: Path):
+        """Generate installation guide."""
+        content = [
+            "# Installation Guide",
+            "",
+            "## Requirements",
+            "",
+            "- Python 3.9 or higher",
+            "- pip package manager",
+            "",
+            "## Installation Methods",
+            "",
+            "### From PyPI",
+            "",
+            "```bash",
+            "pip install package-name",
+            "```",
+            "",
+            "### From Source",
+            "",
+            "```bash",
+            "git clone https://github.com/username/repo.git",
+            "cd repo",
+            "pip install -e .",
+            "```",
+            "",
+            "### Development Installation",
+            "",
+            "```bash",
+            "pip install -e '.[dev,docs,test]'",
+            "```",
+            "",
+            "## Verify Installation",
+            "",
+            "```python",
+            "import package",
+            "print(package.__version__)",
+            "```",
+        ]
+        
+        with open(output_path, 'w') as f:
+            f.write('\n'.join(content))
+    
+    def _generate_quickstart_guide(self, output_path: Path):
+        """Generate quick start guide."""
+        content = [
+            "# Quick Start Guide",
+            "",
+            "Get up and running in 5 minutes!",
+            "",
+            "## Basic Usage",
+            "",
+            "```python",
+            "from package import main",
+            "",
+            "# Initialize",
+            "instance = main()",
+            "",
+            "# Process data",
+            "result = instance.process(data)",
+            "print(result)",
+            "```",
+            "",
+            "## Common Use Cases",
+            "",
+            "### Data Processing",
+            "",
+            "```python",
+            "# Example code here",
+            "```",
+            "",
+            "### API Integration",
+            "",
+            "```python",
+            "# Example code here",
+            "```",
+            "",
+            "## Next Steps",
+            "",
+            "- Read the [API Reference](../api/index.md)",
+            "- Check out [examples](../examples/)",
+            "- Join our [community](https://github.com/username/repo/discussions)",
+        ]
+        
+        with open(output_path, 'w') as f:
+            f.write('\n'.join(content))
+    
+    def _generate_development_guide(self, output_path: Path):
+        """Generate development guide."""
+        content = [
+            "# Development Guide",
+            "",
+            "## Setting Up Development Environment",
+            "",
+            "1. Clone the repository",
+            "2. Create a virtual environment",
+            "3. Install development dependencies",
+            "",
+            "```bash",
+            "git clone https://github.com/username/repo.git",
+            "cd repo",
+            "python -m venv venv",
+            "source venv/bin/activate",
+            "pip install -e '.[dev]'",
+            "```",
+            "",
+            "## Running Tests",
+            "",
+            "```bash",
+            "pytest tests/",
+            "pytest --cov=src --cov-report=html",
+            "```",
+            "",
+            "## Code Quality",
+            "",
+            "```bash",
+            "# Format code",
+            "black src/ tests/",
+            "isort src/ tests/",
+            "",
+            "# Run linters",
+            "flake8 src/ tests/",
+            "mypy src/",
+            "```",
+            "",
+            "## Contributing",
+            "",
+            "1. Fork the repository",
+            "2. Create a feature branch",
+            "3. Make your changes",
+            "4. Submit a pull request",
+        ]
+        
+        with open(output_path, 'w') as f:
+            f.write('\n'.join(content))
+    
+    def _generate_mkdocs_config(self):
+        """Generate MkDocs configuration."""
+        config = {
+            'site_name': 'Project Documentation',
+            'theme': {
+                'name': 'material',
+                'palette': {
+                    'primary': 'indigo',
+                    'accent': 'indigo'
+                }
+            },
+            'nav': [
+                {'Home': 'README.md'},
+                {'API Reference': 'api/index.md'},
+                {'Guides': [
+                    {'Installation': 'guides/installation.md'},
+                    {'Quick Start': 'guides/quickstart.md'},
+                    {'Development': 'guides/development.md'}
+                ]}
+            ]
+        }
+        
+        config_path = self.output_dir / 'mkdocs.yml'
+        if yaml:
+            with open(config_path, 'w') as f:
+                yaml.dump(config, f, default_flow_style=False)
+        else:
+            # Fall back to JSON if YAML not available
+            with open(config_path.with_suffix('.json'), 'w') as f:
+                json.dump(config, f, indent=2)
+            logger.warning("YAML not available, saved config as JSON")
+    
+    def _generate_docusaurus_config(self):
+        """Generate Docusaurus configuration."""
+        config = {
+            'docs': [
+                {'type': 'doc', 'id': 'README'},
+                {
+                    'type': 'category',
+                    'label': 'API',
+                    'items': ['api/index']
+                },
+                {
+                    'type': 'category',
+                    'label': 'Guides',
+                    'items': [
+                        'guides/installation',
+                        'guides/quickstart',
+                        'guides/development'
+                    ]
+                }
+            ]
+        }
+        
+        config_path = self.output_dir / 'sidebar.js'
+        with open(config_path, 'w') as f:
+            f.write(f"module.exports = {json.dumps(config, indent=2)};") 
+
 def main():
-    """Enhanced main function with more options."""
-    parser = argparse.ArgumentParser(description="Advanced AI Documentation Generator")
+    """Enhanced main function with markdown documentation support."""
+    parser = argparse.ArgumentParser(description="Advanced AI Documentation Generator with Markdown Support")
     parser.add_argument('--source', default='src', help='Source directory to analyze')
     parser.add_argument('--docs', default='docs', help='Documentation directory')
+    parser.add_argument('--output', default='docs_markdown', help='Markdown output directory')
     parser.add_argument('--cache', default='.doc_cache', help='Cache directory')
     parser.add_argument('--style', choices=['numpy', 'google', 'sphinx', 'markdown'], 
                        default='numpy', help='Documentation style')
     parser.add_argument('--provider', choices=['openai', 'anthropic', 'google'], 
                        default='openai', help='AI provider')
     parser.add_argument('--batch-size', type=int, default=5, help='Batch size for AI requests')
+    parser.add_argument('--markdown', action='store_true', help='Generate markdown documentation')
+    parser.add_argument('--markdown-style', choices=['github', 'mkdocs', 'sphinx_md', 'docusaurus'],
+                       default='github', help='Markdown documentation style')
     parser.add_argument('--report', action='store_true', help='Generate coverage report')
     parser.add_argument('--report-format', choices=['json', 'markdown', 'html'], 
                        default='markdown', help='Report format')
     parser.add_argument('--dry-run', action='store_true', help='Analyze without generating')
     parser.add_argument('--verbose', action='store_true', help='Verbose output')
+    parser.add_argument('--no-ai', action='store_true', help='Skip AI enhancement')
     
     args = parser.parse_args()
     
@@ -697,26 +1199,95 @@ def main():
             print(f"   Missing: {report['summary']['undocumented']}")
             return
     
-    # Step 2: Generate documentation with AI
-    logger.info(f"🤖 Generating documentation with {args.provider}...")
-    cache_dir = Path(args.cache)
-    doc_gen = BatchAIDocGenerator(args.provider, cache_dir, args.batch_size)
+    # Step 2: Generate documentation with AI (unless --no-ai)
+    enhanced_docs = {}
+    if not args.no_ai:
+        logger.info(f"🤖 Generating documentation with {args.provider}...")
+        cache_dir = Path(args.cache)
+        doc_gen = BatchAIDocGenerator(args.provider, cache_dir, args.batch_size)
+        
+        # Convert elements to list for batch processing
+        elements_list = list(elements.values())
+        style = DocStyle(args.style)
+        
+        enhanced_docs = doc_gen.generate_batch_documentation(elements_list, style)
+        logger.info(f"✅ Generated {len(enhanced_docs)} documentation entries")
+        logger.info(f"💰 Total API cost: ${doc_gen.total_cost:.2f}")
+        logger.info(f"📝 Total tokens used: {doc_gen.total_tokens:,}")
     
-    # Convert elements to list for batch processing
-    elements_list = list(elements.values())
-    style = DocStyle(args.style)
+    # Step 3: Build markdown documentation if requested
+    if args.markdown:
+        logger.info(f"📚 Building markdown documentation in {args.output}...")
+        md_style = MarkdownStyle(args.markdown_style)
+        builder = MarkdownDocumentationBuilder(Path(args.output), md_style)
+        
+        generated_files = builder.build_documentation(elements, enhanced_docs)
+        logger.info(f"✅ Generated {len(generated_files)} markdown files")
+        
+        print(f"\n📖 View your documentation:")
+        print(f"  Main: {Path(args.output) / 'README.md'}")
+        print(f"  API: {Path(args.output) / 'api' / 'index.md'}")
+        
+        if args.markdown_style == 'mkdocs':
+            print("\n  To serve locally: cd {args.output} && mkdocs serve")
+        elif args.markdown_style == 'github':
+            print("\n  Push to GitHub for automatic rendering")
     
-    enhanced_docs = doc_gen.generate_batch_documentation(elements_list, style)
-    logger.info(f"✅ Generated {len(enhanced_docs)} documentation entries")
+    # Step 4: Build traditional documentation structure
+    else:
+        logger.info(f"📚 Building RST documentation in {args.docs}...")
+        # Build RST/Sphinx documentation
+        # Note: This would integrate with your existing Sphinx DocumentationBuilder
+        # For now, save enhanced docs as JSON for integration
+        api_json_path = Path(args.docs) / "api_docs.json"
+        api_data = {
+            'elements': {k: asdict(v) for k, v in elements.items()},
+            'enhanced_docs': enhanced_docs,
+            'generated': datetime.now().isoformat()
+        }
+        with open(api_json_path, 'w') as f:
+            json.dump(api_data, f, indent=2, default=str)
+        logger.info(f"✅ API documentation data saved to {api_json_path}")
     
-    # Step 3: Build documentation structure
-    logger.info(f"📚 Building documentation in {args.docs}...")
-    # Here you would integrate with your DocumentationBuilder
-    # This is a placeholder for the actual implementation
+    # Print summary
+    print("\n" + "="*60)
+    print("🎉 Documentation Generation Complete!")
+    print("="*60)
     
-    logger.info("🎉 Documentation generation complete!")
-    logger.info(f"💰 Total API cost: ${doc_gen.total_cost:.2f}")
-    logger.info(f"📝 Total tokens used: {doc_gen.total_tokens:,}")
+    # Show statistics
+    report_gen = DocumentationReportGenerator(elements)
+    report = report_gen.generate_report()
+    print(f"\n📊 Statistics:")
+    print(f"  Total elements: {report['summary']['total_elements']}")
+    print(f"  Documentation coverage: {report['summary']['coverage_percentage']:.1f}%")
+    print(f"  Average complexity: {report['complexity']['average']:.1f}")
+    
+    if not args.no_ai and enhanced_docs:
+        print(f"\n🤖 AI Enhancement:")
+        print(f"  Documents enhanced: {len(enhanced_docs)}")
+        if 'doc_gen' in locals():
+            print(f"  Total cost: ${doc_gen.total_cost:.2f}")
+    
+    print("\n📁 Output Locations:")
+    if args.markdown:
+        print(f"  Markdown docs: {Path(args.output)}")
+    else:
+        print(f"  Documentation data: {Path(args.docs) / 'api_docs.json'}")
+    
+    if args.report:
+        print(f"  Coverage report: {report_path}")
+    
+    print("\n✨ Next Steps:")
+    if args.markdown:
+        print(f"  1. View documentation: open {Path(args.output) / 'README.md'}")
+        if args.markdown_style == 'mkdocs':
+            print(f"  2. Serve locally: cd {args.output} && mkdocs serve")
+        print("  3. Publish to GitHub Pages or other hosting")
+    else:
+        print("  1. Integrate with your Sphinx documentation builder")
+        print("  2. Run: make docs")
+    
+    print("="*60)
 
 if __name__ == "__main__":
     main()

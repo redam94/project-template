@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+{% raw %}
 """
 Combined automation script for generating tests and documentation.
 Orchestrates both AI generators for complete automation.
@@ -14,6 +14,8 @@ from pathlib import Path
 from datetime import datetime
 import logging
 from typing import Dict, Any
+from dotenv import load_dotenv
+load_dotenv()
 
 # Add project root to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
@@ -307,3 +309,5 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+{% endraw %}

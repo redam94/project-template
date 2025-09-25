@@ -7,6 +7,7 @@
     "readthedocs": "{{ cookiecutter.project_slug }}",
     "full_name": "Your Name",
     "email": "your.email@example.com",
+    "author_email": "{{ cookiecutter.email }}",
     "github_username": "yourusername",
     "github_repository": "{{ cookiecutter.project_slug }}",
     "version": "0.1.0",

@@ -66,7 +66,7 @@ make test
 
 ## 📄 License
 
-Contact us at [{{cookiecutter.author_email}}] for commercial licensing options.
+Contact us at [{{cookiecutter.email }}] for commercial licensing options.
 
 ## 🙏 Acknowledgments
 

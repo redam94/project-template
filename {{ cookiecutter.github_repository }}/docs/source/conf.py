@@ -42,6 +42,8 @@ extensions = [
     'sphinx_design', 
 ]
 
+autosummary_generate = True
+
 # Add support for Markdown files
 source_suffix = {
     '.rst': 'restructuredtext',

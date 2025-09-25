@@ -13,6 +13,12 @@ Welcome to {{cookiecutter.project_name}} Documentation
 
    introduction
    quickstart 
+.. toctree::
+   :maxdepth: 2
+   :caption: API Reference
+   :hidden:
+
+   api
 
 .. toctree::
    :maxdepth: 1

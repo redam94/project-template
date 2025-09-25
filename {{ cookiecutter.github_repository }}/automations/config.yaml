@@ -1,0 +1,65 @@
+# AI Generation Configuration
+ai_generation:
+  # Documentation settings
+  documentation:
+    enabled: {{ cookiecutter.use_ai_documentation }}
+    provider: {{ cookiecutter.ai_provider }}
+    style: {{ cookiecutter.documentation_style }}
+    batch_size: 5
+    cache_ttl_days: 7
+    include_examples: true
+    complexity_threshold: 5
+    
+  # Test generation settings
+  tests:
+    enabled: {{ cookiecutter.use_ai_tests }}
+    provider: {{ cookiecutter.ai_provider }}
+    framework: {{ cookiecutter.test_framework }}
+    coverage_target: {{ cookiecutter.min_coverage_percentage }}
+    test_types:
+      - unit
+      - edge_case
+      - exception
+      - mock
+    parallel_generation: true
+    
+  # Common settings
+  common:
+    max_retries: 3
+    timeout_seconds: 30
+    cost_limit_usd: 10.0
+    verbose_logging: false
+
+# Code quality settings
+quality:
+  linting:
+    max_line_length: 100
+    max_complexity: 10
+    ignore_patterns:
+      - "__pycache__"
+      - ".git"
+      - "*.egg-info"
+      
+  testing:
+    min_coverage: {{ cookiecutter.min_coverage_percentage }}
+    fail_under: true
+    show_missing: true
+    
+  documentation:
+    min_docstring_length: 10
+    require_type_hints: true
+    check_examples: true
+
+# Paths configuration  
+paths:
+  source_dir: "src/{{ cookiecutter.module_name }}"
+  test_dir: "tests"
+  docs_dir: "docs"
+  scripts_dir: "scripts"
+  cache_dir: ".cache/ai_generation"
+
+# API Keys (use environment variables)
+api_keys:
+  openai: "${OPENAI_API_KEY}"
+  anthropic: "${ANTHROPIC_API_KEY}"
+  google: "${GOOGLE_API_KEY}"

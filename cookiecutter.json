@@ -1,11 +1,40 @@
 {
-    "project_name": "example-project",
-    "author_name": "Your Name",
-    "author_email": "your-email@example.com",
-    "version": "0.1.0",
-    "description": "A short description of the project",
+    "project_name": "My Awesome Project",
     "project_slug": "{{ cookiecutter.project_name.lower().replace(' ', '_').replace('-', '_') }}",
-    "python_version": "3.10",
-    "github_username": "your-github-username",
-    "github_repository": "{{ cookiecutter.project_name.lower().replace(' ', '-').replace('_', '-') }}"
+    "module_name": "{{ cookiecutter.project_slug }}",
+    "project_short_description": "A Python package with AI-powered development tools",
+    "full_name": "Your Name",
+    "email": "your.email@example.com",
+    "github_username": "yourusername",
+    "github_repository": "{{ cookiecutter.project_slug }}",
+    "version": "0.1.0",
+    "python_version": "3.9",
+    
+    "_testing_options": "==== Testing Configuration ====",
+    "test_framework": ["pytest", "unittest"],
+    "use_coverage": "y",
+    "use_tox": "y",
+    "min_coverage_percentage": "80",
+    
+    "_ai_options": "==== AI Configuration ====",
+    "use_ai_documentation": "y",
+    "use_ai_tests": "y",
+    "ai_provider": ["openai", "anthropic", "google", "local", "none"],
+    "documentation_style": ["numpy", "google", "sphinx"],
+    
+    "_quality_options": "==== Code Quality ====",
+    "use_black": "y",
+    "use_isort": "y",
+    "use_mypy": "y",
+    "use_flake8": "y",
+    "use_pre_commit": "y",
+    "use_pylint": "n",
+    
+    "_deployment_options": "==== Deployment ====",
+    "use_docker": "n",
+    "use_github_actions": "y",
+    "publish_to_pypi": "n",
+    "use_readthedocs": "y",
+    
+    "open_source_license": ["MIT", "BSD-3-Clause", "Apache-2.0", "GPL-3.0", "Not open source"]
 }

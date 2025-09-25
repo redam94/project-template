@@ -21,7 +21,7 @@ pip install {{cookiecutter.project_slug}}
 For development installation:
 ```bash
 git clone https://github.com/{{cookiecutter.github_username}}/{{cookiecutter.github_repository}}.git
-cd atlas
+cd {{cookiecutter.github_repository}}
 pip install -e ".[dev]"
 ```
 
@@ -33,12 +33,12 @@ pip install -e ".[dev]"
 
 ## 📖 Documentation
 
-- [Getting Started Guide](https://{{ cookiecutter.github_repository }}.readthedocs.io/en/latest/quickstart.html)
+- [Getting Started Guide](https://{{ cookiecutter.readthedocs }}.readthedocs.io/en/latest/quickstart.html)
 
 
 ## 🤝 Contributing
 
-We welcome contributions! Please see our [Contributing Guide](https://{{ cookiecutter.github_repository }}.readthedocs.io/en/latest/contributing.html) for details.
+We welcome contributions! Please see our [Contributing Guide](https://{{ cookiecutter.readthedocs }}.readthedocs.io/en/latest/contributing.html) for details.
 
 ```bash
 # Fork and clone the repository
@@ -64,7 +64,6 @@ make test
 ### Future Plans
 
 
-
 ## 📄 License
 
 Contact us at [{{cookiecutter.author_email}}] for commercial licensing options.
@@ -75,7 +74,7 @@ Contact us at [{{cookiecutter.author_email}}] for commercial licensing options.
 ## 📞 Support
 
 - 🐛 Issues: [GitHub Issues](https://github.com/{{ cookiecutter.github_username }}/{{ cookiecutter.github_repository }}/issues)
-- 📚 Docs: [Read the Docs](https://{{ cookiecutter.github_repository }}.readthedocs.io)
+- 📚 Docs: [Read the Docs](https://{{ cookiecutter.readthedocs }}.readthedocs.io)
 
 ---
 

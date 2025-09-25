@@ -29,7 +29,7 @@ Now that you've completed the quick start:
 
 ## Getting Help
 
-- **Documentation**: Full documentation at [Readthedocs](https://{{ cookiecutter.github_repository }}.readthedocs.io)
+- **Documentation**: Full documentation at [Readthedocs](https://{{ cookiecutter.readthedocs }}.readthedocs.io)
 - **GitHub Issues**: Report bugs or request features
 - **Community Forum**: Ask questions and share experiences
 

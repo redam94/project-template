@@ -2,7 +2,7 @@
 AI-Powered Test Generator for Python Modules
 Automatically generates comprehensive test suites with edge cases, mocks, and fixtures.
 """
-
+{% raw %}
 import os
 import ast
 import json
@@ -1009,3 +1009,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+{% endraw %}

@@ -2,7 +2,7 @@
 Advanced AI Documentation Generator with caching, batch processing, and multiple format support.
 This enhanced version includes cost optimization, parallel processing, and smart caching.
 """
-
+{% raw %}
 import os
 import ast
 import json
@@ -720,3 +720,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+{% endraw %}

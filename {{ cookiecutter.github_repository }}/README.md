@@ -4,7 +4,7 @@
 [![License](https://img.shields.io/badge/license-Dual-green.svg)](LICENSE.md)
 [![Documentation](https://img.shields.io/badge/docs-latest-brightgreen.svg)](https://{{ cookiecutter.github_repository }}.readthedocs.io)
 
-{{cookiecutter.description}}
+{{cookiecutter.project_short_description}}
 
 ## ✨ Key Features
 

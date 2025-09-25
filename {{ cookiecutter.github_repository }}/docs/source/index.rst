@@ -4,7 +4,7 @@ Welcome to {{cookiecutter.project_name}} Documentation
 ============================================
 
 
-{{cookiecutter.description}}
+{{cookiecutter.project_short_description}}
 
 .. toctree::
    :maxdepth: 2

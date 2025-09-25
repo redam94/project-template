@@ -52,6 +52,10 @@ docs = [
     "myst-parser>=2.0",
     "nbsphinx>=0.9",
     "sphinxcontrib-mermaid>=0.9",
+    "sphinx-tabs>=3.2.0",
+    "sphinx-design",
+    "sphinx-autobuild>=2021.3.14",
+    "linkify-it-py>=2.0.3"
 ]
 
 ai = [

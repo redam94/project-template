@@ -109,7 +109,7 @@ latex_elements = {
 # Grouping the document tree into LaTeX files
 latex_documents = [
     (master_doc, '{{cookiecutter.project_slug}}.tex', '{{cookiecutter.project_name}} Documentation',
-     '{{cookiecutter.author_name}}', 'manual'),
+     '{{cookiecutter.full_name}}', 'manual'),
 ]
 
 # -- Extension configuration -------------------------------------------------

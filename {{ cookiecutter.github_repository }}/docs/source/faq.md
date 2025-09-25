@@ -4,7 +4,7 @@
 
 ### What is {{cookiecutter.project_name}}?
 
-{{cookiecutter.short_project_description}}
+{{cookiecutter.project_short_description}}
 
 ### Who should use {{cookiecutter.project_name }}?
 

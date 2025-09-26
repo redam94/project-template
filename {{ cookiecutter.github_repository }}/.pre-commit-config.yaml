@@ -1,4 +1,14 @@
 repos:
+  - repo: local
+    hooks:
+      - id: clean-docstrings
+        name: Clean Python Docstrings
+        entry: python scripts/cleanup_docstrings.py
+        language: system
+        types: [python]
+        args: [--style={{cookiecutter.documentation_style}}, --fix-missing]
+        files: ^src/
+
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v4.5.0
     hooks:

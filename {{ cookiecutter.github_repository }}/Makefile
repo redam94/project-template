@@ -4,8 +4,8 @@
 .PHONY: coverage quality docker build publish clean-all
 
 # Variables
-PYTHON := python
-PIP := pip
+PYTHON := uv python python
+PIP := uv pip
 PROJECT := {{ cookiecutter.module_name }}
 SRC_DIR := src
 TEST_DIR := tests
@@ -26,10 +26,13 @@ help: ## Show this help message
 
 # === Installation ===
 install: ## Install the package
+	uv sync
 	$(PIP) install -e .
 	@echo "$(GREEN)✓ Package installed$(NC)"
 
 dev: ## Install with all development dependencies
+	@echo "$(BLUE)Setting up development environment...$(NC)"
+	uv sync
 	$(PIP) install -e ".[all]"
 	pre-commit install
 	@echo "$(GREEN)✓ Development environment ready$(NC)"
@@ -87,7 +90,7 @@ docs-markdown: ## Build Markdown documentation
 	$(PYTHON) scripts/generate_markdown_docs.py \
 		--source $(SRC_DIR) \
 		--output $(DOCS_MD_DIR) \
-		--style {{ cookiecutter.markdown_style|default('github') }}
+		--markdown-style {{ cookiecutter.markdown_style|default('github') }}
 	@echo "$(GREEN)✓ Markdown docs: $(DOCS_MD_DIR)/README.md$(NC)"
 
 docs-pdf: docs-html ## Build PDF documentation
@@ -179,6 +182,56 @@ docker-build: ## Build Docker image
 
 docker-run: ## Run Docker container
 	docker run -it --rm $(PROJECT):latest
+
+# === Docstring Management ===
+
+# Clean up all docstrings in source files
+clean-docstrings: ## Clean and format all docstrings
+	@echo "$(BLUE)Cleaning docstrings in $(SRC_DIR)...$(NC)"
+	$(PYTHON) scripts/cleanup_docstrings.py $(SRC_DIR) \
+		--recursive \
+		--style {{ cookiecutter.documentation_style|default('numpy') }} \
+		--fix-missing
+	@echo "$(GREEN)✓ Docstrings cleaned$(NC)"
+
+# Check docstrings without modifying
+check-docstrings: ## Check docstrings (dry run)
+	@echo "$(BLUE)Checking docstrings...$(NC)"
+	$(PYTHON) scripts/cleanup_docstrings.py $(SRC_DIR) \
+		--recursive \
+		--style {{ cookiecutter.documentation_style|default('numpy') }} \
+		--dry-run \
+		--report \
+		--output docstring_report.json
+	@echo "$(GREEN)✓ Report saved to docstring_report.json$(NC)"
+
+# Fix docstrings then generate docs
+docs-with-cleanup: clean-docstrings generate-docs ## Clean docstrings then generate docs
+	@echo "$(GREEN)✓ Documentation pipeline complete$(NC)"
+
+# Complete documentation refresh
+refresh-docs: clean-docstrings generate-docs docs-markdown ## Full doc refresh
+	@echo "$(GREEN)✓ All documentation refreshed$(NC)"
+
+# Validate docstrings meet standards
+validate-docstrings: ## Validate docstring standards
+	@echo "$(BLUE)Validating docstrings...$(NC)"
+	$(PYTHON) -m pydocstyle $(SRC_DIR) || true
+	$(PYTHON) scripts/cleanup_docstrings.py $(SRC_DIR) \
+		--recursive \
+		--dry-run \
+		--report \
+		--output .docstring_validation.json
+	@if [ -f .docstring_validation.json ]; then \
+		changes=$$(python -c "import json; d=json.load(open('.docstring_validation.json')); print(d['changes_made'])"); \
+		if [ "$$changes" -gt 0 ]; then \
+			echo "$(YELLOW)⚠ $$changes docstrings need formatting$(NC)"; \
+			echo "  Run 'make clean-docstrings' to fix"; \
+			exit 1; \
+		else \
+			echo "$(GREEN)✓ All docstrings are properly formatted$(NC)"; \
+		fi \
+	fi
 
 # === Cleaning ===
 clean: ## Clean build artifacts

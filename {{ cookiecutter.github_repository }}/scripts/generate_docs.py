@@ -19,7 +19,8 @@ import logging
 from concurrent.futures import ThreadPoolExecutor, as_completed
 import pickle
 from enum import Enum
-
+from dotenv import load_dotenv
+load_dotenv()
 # Configure logging
 logging.basicConfig(
     level=logging.INFO,
@@ -51,7 +52,7 @@ class CodeElement:
     hash: Optional[str] = None
     
     def __hash__(self):
-        return self.hash
+        return int(self.hash, 16)
     
     def __post_init__(self):
         # Calculate hash for caching

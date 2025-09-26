@@ -125,6 +125,7 @@ publishing:
   
   mkdocs:
     theme: material
+    docs_dir: .
     features:
       - navigation.tabs
       - search.suggest

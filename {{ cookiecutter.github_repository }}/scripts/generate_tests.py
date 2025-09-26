@@ -18,6 +18,8 @@ import hashlib
 from enum import Enum
 import importlib.util
 import inspect
+from dotenv import load_dotenv
+load_dotenv()
 
 # Configure logging
 logging.basicConfig(
